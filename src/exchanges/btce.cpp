@@ -44,10 +44,10 @@ static json_t* checkResponse(std::ostream &logFile, json_t *root)
 quote_t getQuote(Parameters& params)
 {
   auto &exchange = queryHandle(params);
-  unique_json root { exchange.getRequest("/api/3/ticker/btc_usd") };
+  unique_json root { exchange.getRequest("/api/3/ticker/eth_usd") };
 
-  double bidValue = json_number_value(json_object_get(json_object_get(root.get(), "btc_usd"), "sell"));
-  double askValue = json_number_value(json_object_get(json_object_get(root.get(), "btc_usd"), "buy"));
+  double bidValue = json_number_value(json_object_get(json_object_get(root.get(), "eth_usd"), "sell"));
+  double askValue = json_number_value(json_object_get(json_object_get(root.get(), "eth_usd"), "buy"));
 
   return std::make_pair(bidValue, askValue);
 }
@@ -66,7 +66,7 @@ std::string sendLongOrder(Parameters &params, std::string direction, double quan
                   << std::setprecision(6) << quantity << "@$"
                   << std::setprecision(2) << price << "...\n";
   std::ostringstream options;
-  options << "pair=btc_usd"
+  options << "pair=eth_usd"
           << "&type="   << direction
           << "&amount=" << std::fixed << quantity;
   // BTCe's 'Trade' method requires rate to be limited to 3 decimals
@@ -82,7 +82,7 @@ std::string sendLongOrder(Parameters &params, std::string direction, double quan
 bool isOrderComplete(Parameters& params, std::string orderId)
 {
   if (orderId == "0") return true;
-  unique_json root { authRequest(params, "ActiveOrders", "pair=btc_usd") };
+  unique_json root { authRequest(params, "ActiveOrders", "pair=eth_usd") };
 
   return json_object_get(root.get(), orderId.c_str()) == nullptr;
 }
@@ -92,21 +92,21 @@ double getActivePos(Parameters& params)
   // TODO:
   // this implementation is more of a placeholder copied from other exchanges;
   // may not be reliable.
-  return getAvail(params, "btc");
+  return getAvail(params, "eth");
 }
 
 double getLimitPrice(Parameters& params, double volume, bool isBid)
 {
   auto &exchange = queryHandle(params);
-  unique_json root { exchange.getRequest("/api/3/depth/btc_usd") };
-  auto bidask = json_object_get(json_object_get(root.get(), "btc_usd"), isBid ? "bids" : "asks");
+  unique_json root { exchange.getRequest("/api/3/depth/eth_usd") };
+  auto bidask = json_object_get(json_object_get(root.get(), "eth_usd"), isBid ? "bids" : "asks");
   double price = 0.0, sumvol = 0.0;
   for (size_t i = 0, n = json_array_size(bidask); i < n; ++i)
   {
     auto currnode = json_array_get(bidask, i);
     price = json_number_value(json_array_get(currnode, 0));
     sumvol += json_number_value(json_array_get(currnode, 1));
-    *params.logFile << "<BTC-e> order book: "
+    *params.logFile << "<eth-e> order book: "
                     << std::setprecision(6) << sumvol << "@$"
                     << std::setprecision(2) << price << std::endl;
     if (sumvol >= std::fabs(volume) * params.orderBookFactor) break;
@@ -115,7 +115,7 @@ double getLimitPrice(Parameters& params, double volume, bool isBid)
 }
 
 /*
- * This is here to handle annoying inconsistences in btce's api.
+ * This is here to handle annoying inconsistences in ethe's api.
  * For example, if there are no open orders, the 'ActiveOrders'
  * method returns an *error* instead of an empty object/array.
  * This function turns that error into an empty object for sake

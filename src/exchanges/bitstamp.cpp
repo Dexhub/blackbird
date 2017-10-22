@@ -44,7 +44,7 @@ static json_t* checkResponse(std::ostream &logFile, json_t *root)
 quote_t getQuote(Parameters& params)
 {
   auto &exchange = queryHandle(params);
-  unique_json root { exchange.getRequest("/api/ticker") };
+  unique_json root { exchange.getRequest("/api/v2/ticker/ethusd/") };
 
   const char *quote = json_string_value(json_object_get(root.get(), "bid"));
   auto bidValue = quote ? atof(quote) : 0.0;
@@ -57,7 +57,7 @@ quote_t getQuote(Parameters& params)
 
 double getAvail(Parameters& params, std::string currency)
 {
-  unique_json root { authRequest(params, "/api/balance/", "") };
+  unique_json root { authRequest(params, "/api/v2/balance/", "") };
   while (json_object_get(root.get(), "message") != NULL)
   {
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -68,9 +68,9 @@ double getAvail(Parameters& params, std::string currency)
   }
   double availability = 0.0;
   const char* returnedText = NULL;
-  if (currency == "btc")
+  if (currency == "eth")
   {
-    returnedText = json_string_value(json_object_get(root.get(), "btc_balance"));
+    returnedText = json_string_value(json_object_get(root.get(), "eth_balance"));
   }
   else if (currency == "usd")
   {
@@ -122,7 +122,7 @@ bool isOrderComplete(Parameters& params, std::string orderId)
   return status && status == std::string("Finished");
 }
 
-double getActivePos(Parameters& params) { return getAvail(params, "btc"); }
+double getActivePos(Parameters& params) { return getAvail(params, "eth"); }
 
 double getLimitPrice(Parameters& params, double volume, bool isBid)
 {
@@ -132,7 +132,7 @@ double getLimitPrice(Parameters& params, double volume, bool isBid)
 
   // loop on volume
   *params.logFile << "<Bitstamp> Looking for a limit price to fill "
-                  << std::setprecision(6) << fabs(volume) << " BTC...\n";
+                  << std::setprecision(6) << fabs(volume) << " ETH...\n";
   double tmpVol = 0.0;
   double p = 0.0;
   double v;

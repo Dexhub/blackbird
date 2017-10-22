@@ -15,6 +15,9 @@
 
 namespace Bitfinex {
 
+
+std::string Gurl="/v1/ticker/ethusd";
+const char *orderURL="/v1/book/ethusd";
 static RestApi& queryHandle(Parameters &params)
 {
   static RestApi query ("https://api.bitfinex.com",
@@ -39,7 +42,7 @@ quote_t getQuote(Parameters &params)
   auto &exchange = queryHandle(params);
 
   std::string url;
-  url = "/v1/ticker/btcusd";
+  url = Gurl;
   
   unique_json root { exchange.getRequest(url) };
 
@@ -97,7 +100,7 @@ std::string sendOrder(Parameters& params, std::string direction, double quantity
                   << std::setprecision(6) << quantity << "@$"
                   << std::setprecision(2) << price << "...\n";
   std::ostringstream oss;
-  oss << "\"symbol\":\"btcusd\", \"amount\":\"" << quantity << "\", \"price\":\"" << price << "\", \"exchange\":\"bitfinex\", \"side\":\"" << direction << "\", \"type\":\"limit\"";
+  oss << "\"symbol\":\"ethusd\", \"amount\":\"" << quantity << "\", \"price\":\"" << price << "\", \"exchange\":\"bitfinex\", \"side\":\"" << direction << "\", \"type\":\"limit\"";
   std::string options = oss.str();
   unique_json root { authRequest(params, "/v1/order/new", options) };
   auto orderId = std::to_string(json_integer_value(json_object_get(root.get(), "order_id")));
@@ -120,7 +123,7 @@ double getActivePos(Parameters& params)
   double position;
   if (json_array_size(root.get()) == 0)
   {
-    *params.logFile << "<Bitfinex> WARNING: BTC position not available, return 0.0" << std::endl;
+    *params.logFile << "<Bitfinex> WARNING: ETH position not available, return 0.0" << std::endl;
     position = 0.0;
   }
   else
@@ -133,11 +136,11 @@ double getActivePos(Parameters& params)
 double getLimitPrice(Parameters& params, double volume, bool isBid)
 {
   auto &exchange  = queryHandle(params);
-  unique_json root { exchange.getRequest("/v1/book/btcusd") };
+  unique_json root { exchange.getRequest(orderURL) };
   json_t *bidask  = json_object_get(root.get(), isBid ? "bids" : "asks");
 
   *params.logFile << "<Bitfinex> Looking for a limit price to fill "
-                  << std::setprecision(6) << fabs(volume) << " BTC...\n";
+                  << std::setprecision(6) << fabs(volume) << " ETH...\n";
   double tmpVol = 0.0;
   double p = 0.0;
   double v;

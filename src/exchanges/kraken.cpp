@@ -55,7 +55,7 @@ double getAvail(Parameters& params, std::string currency) {
   if (currency.compare("usd") == 0) {
     const char * avail_str = json_string_value(json_object_get(result, "ZUSD"));
     available = avail_str ? atof(avail_str) : 0.0;
-  } else if (currency.compare("btc") == 0) {
+  } else if (currency.compare("eth") == 0) {
     const char * avail_str = json_string_value(json_object_get(result, "XXBT"));
     available = avail_str ? atof(avail_str) : 0.0;
   } else {
@@ -113,7 +113,7 @@ bool isOrderComplete(Parameters& params, std::string orderId) {
 }
 
 double getActivePos(Parameters& params) {
-  return getAvail(params, "btc");
+  return getAvail(params, "eth");
 }
 
 double getLimitPrice(Parameters &params, double volume, bool isBid)
